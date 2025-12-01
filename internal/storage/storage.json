@@ -1,4 +1,14 @@
 {
-  "last_link_num": 0,
-  "data": {}
+  "last_link_num": 2,
+  "data": {
+    "1": {
+      "google.com": "available",
+      "nonexistent.zzz": "not available",
+      "yandex.ru": "available"
+    },
+    "2": {
+      "google.com": "available",
+      "yandex.ru": "available"
+    }
+  }
 }

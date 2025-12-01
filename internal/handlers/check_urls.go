@@ -4,6 +4,7 @@ import (
 	"2025/internal/service"
 	"2025/internal/storage"
 	"log"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -16,7 +17,7 @@ func CheckURLs(storage *storage.Storage, tasks chan service.Task) gin.HandlerFun
 		}
 
 		if err := c.BindJSON(&req); err != nil {
-			c.JSON(400, gin.H{"error": "bad request"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 			return
 		}
 
@@ -41,6 +42,8 @@ func CheckURLs(storage *storage.Storage, tasks chan service.Task) gin.HandlerFun
 			results[res.URL] = res.Status
 		}
 
+		close(resultCh)
+
 		// сохраняем
 		storage.AddRecord(id, results)
 		err := storage.SaveToDisk()
@@ -48,7 +51,7 @@ func CheckURLs(storage *storage.Storage, tasks chan service.Task) gin.HandlerFun
 			log.Printf("failed to write storage to JSON file: %v", err)
 		}
 
-		c.JSON(200, gin.H{
+		c.JSON(http.StatusOK, gin.H{
 			"links":     results,
 			"links_num": id,
 		})

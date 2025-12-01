@@ -3,6 +3,7 @@ package storage
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"os"
 	"sync"
 )
@@ -30,7 +31,7 @@ func NewStorage(filePath string) (*Storage, error) {
 	}
 
 	if err := strg.LoadFromDisk(); err != nil {
-		return nil, err
+		log.Printf("storage file error: %v — starting with empty storage", err)
 	}
 
 	return strg, nil
@@ -103,4 +104,20 @@ func (strg *Storage) AddRecord(id int, data map[string]string) {
 	defer strg.mu.Unlock()
 
 	strg.Data[id] = data
+}
+
+// GetRecords возвращает данные по указанным ID групп ссылок.
+func (strg *Storage) GetRecords(ids []int) map[int]map[string]string {
+	strg.mu.Lock()
+	defer strg.mu.Unlock()
+
+	out := make(map[int]map[string]string)
+
+	for _, id := range ids {
+		if val, ok := strg.Data[id]; ok {
+			out[id] = val
+		}
+	}
+
+	return out
 }

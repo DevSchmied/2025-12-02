@@ -6,6 +6,7 @@ import (
 	"2025/internal/storage"
 	"fmt"
 	"log"
+	"path/filepath"
 	"sync"
 )
 
@@ -15,7 +16,7 @@ func main() {
 	tasks := make(chan service.Task, 100)
 	go service.StartWorkerPool(10, tasks)
 
-	jsonPath := "internal\\storage\\storage.json"
+	jsonPath := filepath.Join("internal", "storage", "storage.json")
 	storage, err := storage.NewStorage(jsonPath)
 	if err != nil {
 		log.Fatalf("Error: %v\n", err)
