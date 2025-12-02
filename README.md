@@ -129,7 +129,7 @@ docs/diagrams/package_diagram.dia
 
 ---
 
-## UML / OML Диаграммы
+## UML Диаграммы
 
 В рамках задания выполнены следующие диаграммы:
 - **Use Case Diagram**
