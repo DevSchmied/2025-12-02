@@ -1,44 +1,36 @@
 # URL Status & PDF Report Service — 2025-12-02
 
-## Примечание по срокам
-
-В описании тестового задания было указано, что на выполнение **отводится 7 дней**,
-но в чате HeadHunter уточнили срок **«не более 5 дней».**
-При выполнении я ориентировался на меньший дедлайн.
+## Project Overview
+The **web service** accepts URLs, checks their availability, stores URL sets,
+and generates PDF reports upon request.
 
 ---
 
-## Краткое описание проекта
-**Веб-сервис** принимает ссылки, проверяет их доступность, сохраняет наборы ссылок
-и формирует PDF-отчёты по запросу.
-
----
-
-## Технологии и стек
+## Technologies and Stack
 - **Go 1.23+**
-- **Gin** — веб-фреймворк
-- **gopdf** — генерация PDF
-- **JSON-хранилище** для данных
-- **sync.WaitGroup**, **channels** — конкурентность
-- Поддержка **Graceful Shutdown**
+- **Gin** — web framework
+- **gopdf** — PDF generation
+- **JSON storage** for data
+- **sync.WaitGroup**, **channels** — concurrency
+- **Graceful Shutdown** support
 
 ---
 
-## Основной функционал
-### 1. Проверка ссылок
+## Core Functionality
+### 1. URL Availability Check
 
-Пример запроса:
+Request example:
 
 ```json
 {"links": ["google.com", "malformed.gg"]}
 ```
 
 
-Сервис:
-- проверяет каждый URL через worker pool,
-- определяет статус (available / not available),
-- сохраняет набор под уникальным номером (links_num),
-- возвращает результат:
+The service:
+- checks each URL using a worker pool,
+- determines the status (available / not available),
+- stores the set under a unique number (links_num),
+- returns the result:
 
 ```json
 {
@@ -50,120 +42,120 @@
 }
 ```
 
-### 2. Генерация PDF по номерам наборов
+### 2. PDF Generation by Set Numbers
 
-Пример запроса:
+Request example:
 
 ```json
 {"links_list": [1, 2]}
 ```
 
-Сервис:
-- достаёт сохранённые данные из JSON-хранилища,
-- формирует PDF-отчёт со статусами,
-- отправляет PDF как бинарный файл.
-Используется TTF-шрифт **DejaVu Sans.**
+The service:
+- retrieves stored data from JSON storage,
+- generates a PDF report with statuses,
+- sends the PDF as a binary file.
+A TTF font **DejaVu Sans** is used.
 
 ### 3. Graceful Shutdown
 
-При получении SIGINT/SIGTERM сервис:
-- ещё 3 секунды принимает задачи,
-- закрывает очередь задач,
-- ожидает завершения воркеров (WaitGroup),
-- сохраняет хранилище на диск,
-- корректно завершает работу без потери данных.
+Upon receiving SIGINT/SIGTERM, the service:
+- continues accepting tasks for another 3 seconds,
+- closes the task queue,
+- waits for workers to finish (WaitGroup),
+- saves the storage to disk,
+- shuts down gracefully without data loss.
 
 ---
 
-## Используемые паттерны
-- **WorkerPool** — параллельная проверка URL
-- **Handler Factory** — CheckURLs(...) gin.HandlerFunc, динамическая генерация хендлера
-- **Dependency Injection** — для тестирования модуля storage
-- **Delayed Graceful Shutdown** — корректное завершение сервиса
+## Design Patterns Used
+- **WorkerPool** — parallel URL checking
+- **Handler Factory** — CheckURLs(...) gin.HandlerFunc, dynamic handler generation
+- **Dependency Injection** — for testing the storage module
+- **Delayed Graceful Shutdown** — correct service termination
 
 ---
 
-## Unit-тестирование
+## Unit Testing
 
-Unit-тестирование продемонстрировано на модуле **storage.**
+Unit testing is demonstrated on the **storage** module.
 
-Тесты соответствуют:
-- **AAA-структуре** (Arrange–Act–Assert)
-- **FIRST-принципам**
-- использованию **мок-объектов**
-- **табличным тестам**
+The tests follow:
+- **AAA structure** (Arrange–Act–Assert)
+- **FIRST principles**
+- usage of **mock objects**
+- **table-driven tests**
 - **Dependency Injection**
 
-**Покрытые методы:**
+**Covered methods:**
 - LoadFromDisk()
 - SaveToDisk()
 
 ---
 
-## Архитектура и структура проекта
+## Architecture and Project Structure
 
-Структура проекта подробно отображена в **Package Diagram**, расположенной по пути:
+The project structure is detailed in the **Package Diagram**, located at:
 
 ```
 docs/diagrams/package_diagram.png
 docs/diagrams/package_diagram.dia
 ```
 
-Диаграмма отражает ключевые компоненты проекта и их ответственность.
+The diagram reflects the key project components and their responsibilities.
 
-### Основные пакеты
+### Main Packages
 - **cmd/**  
-  Точка входа приложения; запуск сервера и обработка graceful shutdown.
+  Application entry point; server startup and graceful shutdown handling.
 - **internal/check/**  
-  Функция проверки доступности URL.
+  URL availability checking function.
 - **internal/handlers/**  
-  HTTP-хендлеры для проверки ссылок и генерации PDF.
+  HTTP handlers for URL checking and PDF generation.
 - **internal/pdf/**  
-  Генерация PDF-отчётов.
+  PDF report generation.
 - **internal/server/**  
-  HTTP-сервер, маршруты, инициализация.
+  HTTP server, routing, initialization.
 - **internal/service/**  
-  Worker Pool для параллельной обработки задач.
+  Worker Pool for parallel task processing.
 - **internal/storage/**  
-  In-memory хранилище, JSON-файл, Dependency Injection.
+  In-memory storage, JSON file, Dependency Injection.
 
 ---
 
-## UML Диаграммы
+## UML Diagrams
 
-В рамках задания выполнены следующие диаграммы:
+As part of the assignment, the following diagrams were created:
 - **Use Case Diagram**
 - **Activity Diagram**
 - **Package Diagram**
 
-Все материалы находятся в папке:
+All materials are located in the folder:
 
 **docs/diagrams/**
 
-Форматы:
-- исходные файлы: .dia (созданы в программе **Dia**)
-- скриншоты диаграмм
+Formats:
+- source files: .dia (created with **Dia**)
+- diagram screenshots
 
-Каждая диаграмма размещена в **двух вариантах:**
-1. **.dia** — редактируемый формат
-2. **.png** — скриншот для быстрой проверки
+Each diagram is provided in **two versions:**
+1. **.dia** — editable format
+2. **.png** — screenshot for quick review
 
 ---
 
-## Запуск проекта
+## Running the Project
 
 ```bash
 go run ./cmd/main.go
 ```
 
-Сервис доступен по адресу:
+The service is available at:
 
 http://localhost:8080
 
 ---
 
-## Примеры HTTP-запросов
-1. Проверка ссылок
+## HTTP Request Examples
+1. URL availability check
 
 **POST /check-links**
 
@@ -171,7 +163,7 @@ http://localhost:8080
 {"links": ["google.com", "ya.ru"]}
 ```
 
-2. Генерация PDF
+2. PDF generation
 
 **POST /make-pdf**
 
@@ -181,20 +173,20 @@ http://localhost:8080
 
 ---
 
-## Ручное тестирование (Postman)
+## Manual Testing (Postman)
 
-Выполнено end-to-end тестирование:
-1. Проверка статусов ссылок
-2. Генерация PDF по сохранённым наборам
+End-to-end testing was performed:
+1. URL status checking
+2. PDF generation from saved sets
 
-Скриншоты находятся в:
+Screenshots are located in:
 
 docs/screenshots/
 
 
-Файлы:
-- check_links — успешная проверка
-- make_pdf_01 — PDF по одному набору
-- make_pdf_02 — PDF по нескольким наборам
+Files:
+- check_links — successful check
+- make_pdf_01 — PDF for a single set
+- make_pdf_02 — PDF for multiple sets
 
-Все тесты выполнялись на localhost:8080.
+All tests were performed on localhost:8080.
