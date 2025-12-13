@@ -16,7 +16,7 @@ import (
 
 func main() {
 
-	// Канал задач для воркеров
+	// Task channel for workers
 	tasks := make(chan service.Task, 100)
 	var wg sync.WaitGroup
 
@@ -28,7 +28,7 @@ func main() {
 		log.Fatalf("Error: %v\n", err)
 	}
 
-	// Контекст ловит SIGINT / SIGTERM
+	// Context catches SIGINT / SIGTERM
 	ctx, stop := signal.NotifyContext(
 		context.Background(),
 		syscall.SIGINT,
@@ -36,32 +36,32 @@ func main() {
 	)
 	defer stop()
 
-	// Инициализация сервера
+	// Server initialization
 	addr := "localhost:8080"
 	srv := server.NewServer(addr, strg, tasks)
 
-	// Запуск сервера
+	// Server startup
 	go func() {
 		if err := srv.Start(); err != nil {
 			log.Fatalf("Server failed to start: %v\n", err)
 		}
 	}()
 
-	// Ожидаем сигнала остановки
+	// Wait for shutdown signal
 	<-ctx.Done()
 
-	// Принять новые задачи ещё 3 секунды
+	// Accept new tasks for 3 more seconds
 	fmt.Println("Accepting new tasks for 3 more seconds.")
 	time.Sleep(3 * time.Second)
 	fmt.Println("Starting graceful shutdown.")
 
-	// завершение приёма задач
+	// Stop accepting new tasks
 	close(tasks)
 
-	// завершение воркеров
+	// Wait for workers to finish
 	wg.Wait()
 
-	// Сохраняем хранилище на диск
+	// Save storage to disk
 	if err := strg.SaveToDisk(); err != nil {
 		log.Printf("storage save error: %v", err)
 	}

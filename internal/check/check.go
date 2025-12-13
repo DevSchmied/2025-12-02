@@ -7,22 +7,22 @@ import (
 )
 
 func CheckLink(url string) bool {
-	// Проверяем, есть ли у URL префикс http/https. Это необходимо для дальнейшей работы.
+	// Check whether the URL has an http/https prefix. This is required for further processing.
 	if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
 		url = "https://" + url
 	}
 
-	// Создаём HTTP-клиент с таймаутом 2 секунды.
+	// Create an HTTP client with a 2-second timeout.
 	client := http.Client{
 		Timeout: 2 * time.Second,
 	}
 
-	// Проверяем, отвечает ли сайт на запрос.
+	// Check whether the site responds to the request.
 	resp, err := client.Get(url)
 	if err != nil {
 		return false
 	}
-	// Закрываем тело ответа, чтобы избежать утечки ресурсов.
+	// Close the response body to avoid resource leaks.
 	defer resp.Body.Close()
 
 	return resp.StatusCode < 400

@@ -7,18 +7,18 @@ import (
 	"github.com/signintech/gopdf"
 )
 
-// GeneratePDF формирует PDF-файл со списком групп ссылок и их статусами.
+// GeneratePDF generates a PDF file containing a list of link groups and their statuses.
 func GeneratePDF(data map[int]map[string]string) ([]byte, error) {
 	var pdf gopdf.GoPdf
 
-	// Создаём новый PDF-документ
+	// Create a new PDF document
 	pdf.Start(gopdf.Config{
 		PageSize: *gopdf.PageSizeA4,
 	})
-	// Добавляем одну страницу
+	// Add a single page
 	pdf.AddPage()
 
-	// Подключаем шрифт
+	// Load the font
 	if err := pdf.AddTTFFont("DejaVu", filepath.Join("internal", "pdf", "DejaVuSans.ttf")); err != nil {
 		return nil, fmt.Errorf("cannot load font: %v", err)
 	}
@@ -26,24 +26,24 @@ func GeneratePDF(data map[int]map[string]string) ([]byte, error) {
 		return nil, fmt.Errorf("cannot set font: %v", err)
 	}
 
-	// Начальная координата по вертикали
+	// Initial vertical coordinate
 	x := 30.0
 	y := 40.0
 
 	for id, links := range data {
-		// Заголовок группы
+		// Group header
 		pdf.SetXY(x, y)
 		pdf.Cell(nil, fmt.Sprintf("Group %d:", id))
 		y += 18
 
-		// Строки с URL и статусами
+		// Lines with URLs and statuses
 		for url, status := range links {
 			pdf.SetXY(x+10, y)
 			pdf.Cell(nil, fmt.Sprintf("%s - %s", url, status))
 			y += 15
 		}
 
-		// Отступ между группами
+		// Spacing between groups
 		y += 15
 	}
 	return pdf.GetBytesPdf(), nil

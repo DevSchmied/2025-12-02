@@ -16,12 +16,12 @@ type Task struct {
 	Res chan Result
 }
 
-// StartWorkerPool запускает N воркеров,
-// которые будут обрабатывать задачи из канала tasks
+// StartWorkerPool starts N workers
+// that process tasks from the tasks channel
 func StartWorkerPool(n int, tasks chan Task, wg *sync.WaitGroup) {
 	for i := 1; i <= n; i++ {
 		go func(workerId int) {
-			// Воркеры читают задачи из канала, пока канал не будет закрыт
+			// Workers read tasks from the channel until it is closed
 			for task := range tasks {
 				wg.Add(1)
 				func() {

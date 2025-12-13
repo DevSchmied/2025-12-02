@@ -8,8 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Server — структура HTTP-сервера.
-// Хранит роутер, адрес запуска, хранилище данных и канал задач для worker pool.
+// Server is the HTTP server structure.
+// It holds the router, startup address, data storage, and the task channel for the worker pool.
 type Server struct {
 	router  *gin.Engine
 	address string
@@ -17,7 +17,7 @@ type Server struct {
 	tasks   chan service.Task
 }
 
-// NewServer — конструктор сервера.
+// NewServer is the server constructor.
 func NewServer(addr string, strg *storage.Storage, tsks chan service.Task) *Server {
 	r := gin.Default()
 	return &Server{
@@ -28,13 +28,13 @@ func NewServer(addr string, strg *storage.Storage, tsks chan service.Task) *Serv
 	}
 }
 
-// registerRoutes — регистрирует все HTTP-маршруты сервиса.
+// registerRoutes registers all HTTP routes of the service.
 func (s *Server) registerRoutes() {
 	s.router.POST("/check-links", handlers.CheckURLs(s.storage, s.tasks))
 	s.router.POST("/make-pdf", handlers.MakePDF(s.storage))
 }
 
-// Start — запускает HTTP-сервер на указанном адресе.
+// Start starts the HTTP server on the specified address.
 func (s *Server) Start() error {
 	s.registerRoutes()
 	return s.router.Run(s.address)

@@ -35,7 +35,7 @@ func TestLoadFromDisk(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "файл отсутствует — создаём пустое хранилище",
+			name:    "file does not exist — create empty storage",
 			data:    nil,
 			err:     os.ErrNotExist,
 			wantLen: 0,
@@ -43,7 +43,7 @@ func TestLoadFromDisk(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "валидный JSON — данные загружены",
+			name: "valid JSON — data loaded",
 			data: []byte(`{
                 "last_link_num": 2,
                 "data": {"1": {"google.com": "available"}}
@@ -54,7 +54,7 @@ func TestLoadFromDisk(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:    "битый JSON — ошибка",
+			name:    "corrupted JSON — error",
 			data:    []byte(`{invalid json}`),
 			err:     nil,
 			wantErr: true,
@@ -73,10 +73,10 @@ func TestLoadFromDisk(t *testing.T) {
 
 			// Assert
 			if tc.wantErr && err == nil {
-				t.Fatalf("ожидалась ошибка, но её нет")
+				t.Fatalf("expected an error, but got none")
 			}
 			if !tc.wantErr && err != nil {
-				t.Fatalf("неожиданная ошибка: %v", err)
+				t.Fatalf("unexpected error: %v", err)
 			}
 
 			if len(st.Data) != tc.wantLen {
@@ -102,7 +102,7 @@ func TestSaveToDisk(t *testing.T) {
 		wantJSONSubstr []string
 	}{
 		{
-			name: "успешная запись",
+			name: "successful write",
 			initialData: map[int]map[string]string{
 				1: {"google.com": "available"},
 			},
@@ -116,7 +116,7 @@ func TestSaveToDisk(t *testing.T) {
 			},
 		},
 		{
-			name:        "ошибка записи файла",
+			name:        "file write error",
 			initialData: map[int]map[string]string{},
 			lastNum:     0,
 			writeErr:    errors.New("disk full"),

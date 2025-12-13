@@ -8,26 +8,26 @@ import (
 	"sync"
 )
 
-// FileReader — интерфейс для абстракции чтения/записи файлов (DI).
+// FileReader is an interface for abstracting file read/write operations (DI).
 type FileReader interface {
 	ReadFile(path string) ([]byte, error)
 	WriteFile(name string, data []byte, perm os.FileMode) error
 }
 
-// OSFileReader — реализация FileReader поверх os.
+// OSFileReader is a FileReader implementation based on os.
 type OSFileReader struct{}
 
-// ReadFile — чтение файла через os.ReadFile.
+// ReadFile reads a file using os.ReadFile.
 func (oSFileReader OSFileReader) ReadFile(path string) ([]byte, error) {
 	return os.ReadFile(path)
 }
 
-// WriteFile — запись файла через os.WriteFile.
+// WriteFile writes a file using os.WriteFile.
 func (oSFileReader OSFileReader) WriteFile(name string, data []byte, perm os.FileMode) error {
 	return os.WriteFile(name, data, perm)
 }
 
-// Storage хранит данные в памяти и управляет чтением/записью JSON-файла.
+// Storage stores data in memory and manages reading/writing a JSON file.
 type Storage struct {
 	mu          sync.Mutex
 	Data        map[int]map[string]string
@@ -36,13 +36,13 @@ type Storage struct {
 	reader      FileReader
 }
 
-// storageFileData — DTO для сериализации данных в JSON.
+// storageFileData is a DTO for serializing data to JSON.
 type storageFileData struct {
 	LastLinkNum int                       `json:"last_link_num"`
 	Data        map[int]map[string]string `json:"data"`
 }
 
-// NewStorage создаёт объект хранилища и сразу загружает данные с диска.
+// NewStorage creates a storage object and immediately loads data from disk.
 func NewStorage(filePath string, reader FileReader) (*Storage, error) {
 	if reader == nil {
 		reader = OSFileReader{}
@@ -62,15 +62,15 @@ func NewStorage(filePath string, reader FileReader) (*Storage, error) {
 	return strg, nil
 }
 
-// LoadFromDisk загружает данные хранилища из JSON-файла.
+// LoadFromDisk loads storage data from a JSON file.
 func (strg *Storage) LoadFromDisk() error {
-	// Блокируем доступ, чтобы избежать гонок данных
+	// Lock access to avoid data races
 	strg.mu.Lock()
 	defer strg.mu.Unlock()
 
 	fileData, err := strg.reader.ReadFile(strg.filePath)
 	if err != nil {
-		// Файл отсутствует — инициализируем пустое состояние
+		// File does not exist — initialize empty state
 		if errors.Is(err, os.ErrNotExist) {
 			strg.Data = make(map[int]map[string]string)
 			strg.LastLinkNum = 0
@@ -79,7 +79,7 @@ func (strg *Storage) LoadFromDisk() error {
 		return err
 	}
 
-	// Превращаем JSON-файл в структуру Go, чтобы можно было извлечь LastLinkNum и Data
+	// Convert the JSON file into a Go structure to extract LastLinkNum and Data
 	var parsed storageFileData
 	if err := json.Unmarshal(fileData, &parsed); err != nil {
 		return err
@@ -95,7 +95,7 @@ func (strg *Storage) LoadFromDisk() error {
 	return nil
 }
 
-// SaveToDisk сохраняет текущее состояние хранилища в JSON-файл.
+// SaveToDisk saves the current storage state to a JSON file.
 func (strg *Storage) SaveToDisk() error {
 	strg.mu.Lock()
 	defer strg.mu.Unlock()
@@ -105,17 +105,17 @@ func (strg *Storage) SaveToDisk() error {
 		Data:        strg.Data,
 	}
 
-	// Преобразуем в JSON с отступами
+	// Convert to JSON with indentation
 	encoded, err := json.MarshalIndent(fileData, "", "  ")
 	if err != nil {
 		return err
 	}
 
-	// Записываем в файл (файл будет создан, если его нет)
+	// Write to file (the file will be created if it does not exist)
 	return strg.reader.WriteFile(strg.filePath, encoded, 0644)
 }
 
-// GenerateID увеличивает счётчик и возвращает новый номер.
+// GenerateID increments the counter and returns a new number.
 func (strg *Storage) GenerateID() int {
 	strg.mu.Lock()
 	defer strg.mu.Unlock()
@@ -123,7 +123,7 @@ func (strg *Storage) GenerateID() int {
 	return strg.LastLinkNum
 }
 
-// AddRecord сохраняет новый результат по ID.
+// AddRecord stores a new result by ID.
 func (strg *Storage) AddRecord(id int, data map[string]string) {
 	strg.mu.Lock()
 	defer strg.mu.Unlock()
@@ -131,7 +131,7 @@ func (strg *Storage) AddRecord(id int, data map[string]string) {
 	strg.Data[id] = data
 }
 
-// GetRecords возвращает данные по указанным ID групп ссылок.
+// GetRecords returns data for the specified link group IDs.
 func (strg *Storage) GetRecords(ids []int) map[int]map[string]string {
 	strg.mu.Lock()
 	defer strg.mu.Unlock()

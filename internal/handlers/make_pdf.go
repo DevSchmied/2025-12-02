@@ -8,8 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// MakePDF — хендлер, который принимает список номеров ссылок,
-// формирует по ним PDF и отправляет его пользователю.
+// MakePDF is a handler that accepts a list of link set numbers,
+// generates a PDF based on them, and sends it to the user.
 func MakePDF(storage *storage.Storage) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req struct {
@@ -29,13 +29,13 @@ func MakePDF(storage *storage.Storage) gin.HandlerFunc {
 			return
 		}
 
-		// Указываем, что возвращаем файл PDF
+		// Specify that a PDF file is being returned
 		c.Header("Content-Type", "application/pdf")
 
-		// Говорим браузеру скачать файл под именем report.pdf
+		// Instruct the browser to download the file as report.pdf
 		c.Header("Content-Disposition", "attachment; filename=report.pdf")
 
-		// Отправляем PDF как бинарный ответ
+		// Send the PDF as a binary response
 		c.Data(http.StatusOK, "application/pdf", pdfBytes)
 	}
 }

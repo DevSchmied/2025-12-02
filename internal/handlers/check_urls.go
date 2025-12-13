@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// CheckURLs проверяет URL через worker pool, сохраняет результаты и возвращает links_num.
+// CheckURLs checks URLs via a worker pool, stores the results, and returns links_num.
 func CheckURLs(storage *storage.Storage, tasks chan service.Task) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req struct {
@@ -23,12 +23,12 @@ func CheckURLs(storage *storage.Storage, tasks chan service.Task) gin.HandlerFun
 
 		id := storage.GenerateID()
 
-		// канал для получения результатов от воркеров
+		// Channel for receiving results from workers
 		resultCh := make(chan service.Result)
-		// map для будущего ответа
+		// Map for the future response
 		results := make(map[string]string)
 
-		// каждую ссылку в worker pool
+		// Send each link to the worker pool
 		for _, link := range req.Links {
 			tasks <- service.Task{
 				URL: link,
@@ -36,7 +36,7 @@ func CheckURLs(storage *storage.Storage, tasks chan service.Task) gin.HandlerFun
 			}
 		}
 
-		// результаты из канала
+		// Collect results from the channel
 		for range req.Links {
 			res := <-resultCh
 			results[res.URL] = res.Status
@@ -44,7 +44,7 @@ func CheckURLs(storage *storage.Storage, tasks chan service.Task) gin.HandlerFun
 
 		close(resultCh)
 
-		// сохраняем
+		// Save results
 		storage.AddRecord(id, results)
 		err := storage.SaveToDisk()
 		if err != nil {
