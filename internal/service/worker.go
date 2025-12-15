@@ -23,7 +23,6 @@ func StartWorkerPool(n int, tasks chan Task, wg *sync.WaitGroup) {
 		go func(workerId int) {
 			// Workers read tasks from the channel until it is closed
 			for task := range tasks {
-				wg.Add(1)
 				func() {
 					defer wg.Done()
 					log.Printf("worker %d processing %s", workerId, task.URL)

@@ -4,6 +4,7 @@ import (
 	"2025/internal/handlers"
 	"2025/internal/service"
 	"2025/internal/storage"
+	"sync"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,23 +16,36 @@ type Server struct {
 	address string
 	storage *storage.Storage
 	tasks   chan service.Task
+	wg      *sync.WaitGroup
 }
 
 // NewServer is the server constructor.
-func NewServer(addr string, strg *storage.Storage, tsks chan service.Task) *Server {
+func NewServer(
+	addr string,
+	strg *storage.Storage,
+	tsks chan service.Task,
+	wg *sync.WaitGroup,
+) *Server {
 	r := gin.Default()
 	return &Server{
 		router:  r,
 		address: addr,
 		storage: strg,
 		tasks:   tsks,
+		wg:      wg,
 	}
 }
 
 // registerRoutes registers all HTTP routes of the service.
 func (s *Server) registerRoutes() {
-	s.router.POST("/check-links", handlers.CheckURLs(s.storage, s.tasks))
-	s.router.POST("/make-pdf", handlers.MakePDF(s.storage))
+	s.router.POST(
+		"/check-links",
+		handlers.CheckURLs(s.storage, s.tasks, s.wg),
+	)
+	s.router.POST(
+		"/make-pdf",
+		handlers.MakePDF(s.storage),
+	)
 }
 
 // Start starts the HTTP server on the specified address.

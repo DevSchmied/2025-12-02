@@ -5,12 +5,17 @@ import (
 	"2025/internal/storage"
 	"log"
 	"net/http"
+	"sync"
 
 	"github.com/gin-gonic/gin"
 )
 
 // CheckURLs checks URLs via a worker pool, stores the results, and returns links_num.
-func CheckURLs(storage *storage.Storage, tasks chan service.Task) gin.HandlerFunc {
+func CheckURLs(
+	storage *storage.Storage,
+	tasks chan service.Task,
+	wg *sync.WaitGroup,
+) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req struct {
 			Links []string `json:"links"`
@@ -30,6 +35,7 @@ func CheckURLs(storage *storage.Storage, tasks chan service.Task) gin.HandlerFun
 
 		// Send each link to the worker pool
 		for _, link := range req.Links {
+			wg.Add(1)
 			tasks <- service.Task{
 				URL: link,
 				Res: resultCh,

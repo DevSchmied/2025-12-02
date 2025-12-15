@@ -38,7 +38,7 @@ func main() {
 
 	// Server initialization
 	addr := "localhost:8080"
-	srv := server.NewServer(addr, strg, tasks)
+	srv := server.NewServer(addr, strg, tasks, &wg)
 
 	// Server startup
 	go func() {
